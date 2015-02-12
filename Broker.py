@@ -1,4 +1,8 @@
 import socket
+import threading
+import hashlib
+
+
 
 class Broker():
 
@@ -8,34 +12,23 @@ class Broker():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        self.sock.bind((broker_ip, broker_port))
 
+    def add_client(self, username, password):
+        try:
+            cid = username + ':' + hashlib.sha1(str(password)).hexdigest() + '\n'
+            with open('clients.txt', 'a') as file:
+                file.write(cid)
+        except Exception, e:
+            raise e
+        
+    def delete_client(self, username):
+        f = open("clients.txt", "r")
+        lines = f.readlines()
+        f.close()
+        f = open("clients.txt", "w")
+        for line in lines:
+            if line[:len(username)] != username:
+                f.write(line)
+        f.close()
 
-    def listen_client_connection(self):
-
-# import SocketServer
-
-# list_client = []
-# client_file = open("test", "r+")
-
-# class Broker(SocketServer.BaseRequestHandler):
-
-#     def handle(self):
-#         data = self.request[0].strip()
-#         self.socket = self.request[1]
-#         list_client.append(self.client_address)
-#         self.content_file = client_file.read()
-#         self.client_identification()
-
-
-#     def client_identification(self):
-
-#         data = self.request[0].strip()
-#         socket = self.request[1]
-#         if content_file.find(data) != -1:
-#             self.socket.sendto("connection ok", self.client_address)
-#         else:
-#             self.socket.sendto("Unkown", self.client_address)
-#         for user in content_file:
-#             if data == user:
-#                 self.socket.sendto("connection ok", self.client_address)
-#         
