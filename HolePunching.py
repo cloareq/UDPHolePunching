@@ -1,10 +1,4 @@
-#!/usr/bin/python
 
-import sys
-import argparse
-import SocketServer
-from threading
-from Broker import *
 from Client import *
 
 __version__ = '1.0'
@@ -19,6 +13,7 @@ __version__ = '1.0'
 
 #	b = SocketServer.UDPServer((broker_ip, broker_port), Broker)
 #	b.handle_request()
+rez
 
 def broker(broker_ip, broker_port):
 	b = Broker(broker_ip, broker_port)
