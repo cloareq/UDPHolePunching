@@ -3,18 +3,6 @@ from Client import *
 
 __version__ = '1.0'
 
-#def broker(broker_ip, broker_port):
-	"""
-	
-	To initiate the broker and make him able to listen on a specified
-	ip and port. Clients can connect to this broker.
-	
-	"""
-
-#	b = SocketServer.UDPServer((broker_ip, broker_port), Broker)
-#	b.handle_request()
-rez
-
 def broker(broker_ip, broker_port):
 	b = Broker(broker_ip, broker_port)
 
