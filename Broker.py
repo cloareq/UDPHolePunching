@@ -1,7 +1,7 @@
 import socket
 import threading
 import hashlib
-
+import sys
 
 
 class Broker():
@@ -15,15 +15,21 @@ class Broker():
         self.sock.bind((broker_ip, broker_port))
 
     def add_client(self, username, password):
+        self.delete_client(username)
+        cid = username + ':' + hashlib.sha1(str(password)).hexdigest() + '\n'
         try:
-            cid = username + ':' + hashlib.sha1(str(password)).hexdigest() + '\n'
             with open('clients.txt', 'a') as file:
                 file.write(cid)
-        except Exception, e:
-            raise e
+        except:
+            f = open('clients.txt', 'w+')
+            f.close()
+            self.add_client(username, password)
         
     def delete_client(self, username):
-        f = open("clients.txt", "r")
+        try:
+            f = open("clients.txt", "r+")
+        except:
+            f = open("clients.txt", "w+")
         lines = f.readlines()
         f.close()
         f = open("clients.txt", "w")
@@ -32,3 +38,5 @@ class Broker():
                 f.write(line)
         f.close()
 
+b = Broker('127.0.0.1', 1212)
+b.delete_client("titi")
