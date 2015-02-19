@@ -1,5 +1,6 @@
 
 from Client import *
+from Broker import *
 
 __version__ = '1.0'
 
