@@ -14,6 +14,7 @@ class Broker():
         self.sock.bind((ip, port))
         self.clients_list = []
         self.socklist = []
+        self.client_connection_list = []
 
     def add_client(self, username, password):
         self.delete_client(username)
@@ -46,12 +47,10 @@ class Broker():
         found = False
         for line in flist:
             if str(userinfo) in line:
-                print "found"
                 found = True
                 return True
         if not found:
             return False
-
 
     def init_socket(self, username, ipclient):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -60,13 +59,39 @@ class Broker():
         self.socklist.append((username, s, port, ipclient))
         return s, port
 
-    def talk_to_client(self, ip_client, socket_client):
+    def catch_connected_clients(self, ip_client, socket_client):
+        for client in self.clients_list:
+            socket_client.sendto(str(client), ip_client)
+        socket_client.sendto("done", ip_client)
+
+    def connection_to_peer(self, ip_client, socket_client, username):
+        msg, ip = socket_client.recvfrom(1024)
+        peer_username = msg
+        ip_peer = None
+        for client in self.client_connection_list:
+            if client[0] == peer_username:
+                ip_peer = client[1]
+                socket_client.sendto(ip_peer[0], ip_client)
+                socket_client.sendto(str(ip_peer[1]), ip_client)
+
+                client[2].sendto("connection request", ip_peer)
+                client[2].sendto(ip_client[0], ip_peer)
+                client[2].sendto(str(ip_client[1]), ip_peer)
+
+        if ip_peer == None:
+            socket_client.sendto("User not connnected", ip_client)
+
+
+
+    def talk_to_client(self, ip_client, socket_client, username):
         while True:
             msg, ip = socket_client.recvfrom(1024)
             if msg == "connected clients":
-                socket_client.sendto(str(self.clients_list), ip)
-
-
+                self.catch_connected_clients(ip_client, socket_client)
+            if msg == "connection socket" :
+                self.client_connection_list.append((username, ip, socket_client))
+            if msg.find("request connection") != -1:
+                self.connection_to_peer(ip_client, socket_client, username)
 
     def listen_clients(self):
         while True:
@@ -79,9 +104,11 @@ class Broker():
             s, port = self.init_socket(username, ipclient)
             self.clients_list.append(username)
             self.sock.sendto(str(port), ipclient)
-            start_new_thread(self.talk_to_client, (ipclient, s))
+            start_new_thread(self.talk_to_client, (ipclient, s, username))
    
 
 b = Broker('127.0.0.1', 4242)
 b.add_client("quentin", "123")
+b.add_client("bob", "123")
+b.add_client("toto", "123")
 b.listen_clients()
